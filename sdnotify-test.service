@@ -1,0 +1,14 @@
+[Unit]
+Description=My Java driven simple service
+After=syslog.target network.target
+
+[Service]
+Type=notify
+WorkingDirectory=/home/vilmosnagy/Projects/realCity/sdnotify-systemd-demo
+ExecStart=java -jar /home/vilmosnagy/Projects/realCity/sdnotify-systemd-demo/target/sdnotify-systemd-demo-0.0.1-SNAPSHOT.jar
+ExecStop=/bin/kill -15 $MAINPID
+NotifyAccess=all
+WatchdogSec=360
+
+[Install]
+WantedBy=multi-user.target

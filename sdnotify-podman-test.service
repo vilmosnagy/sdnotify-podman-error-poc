@@ -1,0 +1,31 @@
+[Unit]
+Description=SDNotify-test
+Wants=network.target
+After=network-online.target minio.service
+RequiresMountsFor=%t/containers
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/container-%N.pid %t/container-%N.ctr-id
+ExecStart=/usr/bin/podman run \
+              --name %N \
+              --detach \
+              --replace \
+              --network host \
+              --cidfile %t/container-%N.ctr-id \
+              --conmon-pidfile %t/container-%N.pid \
+              --cgroups=no-conmon \
+              --log-driver=journald \
+              sdnotify-test
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-%N.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-%N.ctr-id
+PIDFile=%t/container-%N.pid
+Type=notify
+NotifyAccess=all
+WatchdogSec=360
+
+[Install]
+WantedBy=multi-user.target default.target
+
